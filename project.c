@@ -5,13 +5,13 @@
 #include <ctype.h>
 #include <string.h>
 
-#define BUFMAX 65536
-#define MAXNAME 50
-#define MAXBATCH 20
-#define MAXVACCINES 1000
+#define BUFMAX 65536 /* maximum size of input line */ 
+#define MAXNAME 50 /* maximum size of vaccine name*/
+#define MAXBATCH 20 /* maximum size of a batch number*/
+#define MAXVACCINES 1000 /* maximum size of batches in the system */
 
-#define E2MANYVAC "too many vaccines"
-#define EDUPBATCH "duplicate batch number"
+#define E2MANYVAC "too many vaccines" 
+#define EDUPBATCH "duplicate batch number" 
 #define EINVBATCH "invalid batch"
 #define EINVNAME "invalid name"
 #define EINVDATE "invalid date"
@@ -23,37 +23,41 @@
 #define ENOSUCHUSER "no such user"
 #define ENOMEMORY "No memory."
 
-#define E2MANYVACPT "demasiadas vacinas"
-#define EDUPBATCHPT "número de lote duplicado"
-#define EINVBATCHPT "lote inválido"
-#define EINVNAMEPT "nome inválido"
-#define EINVDATEPT "data inválida"
-#define EINVQUANTITYPT "quantidade inválida"
-#define ENOSUCHVACPT "vacina inexistente"
-#define ENOSTOCKPT "esgotado"
-#define EALREADYVACPT "já vacinado"
-#define ENOSUCHBATCHPT "lote inexistente"
-#define ENOSUCHUSERPT "utente inexistente"
-#define ENOMEMORYPT "sem memória"
+#define E2MANYVACPT "demasiadas vacinas" /* excedes vaccine limit */
+#define EDUPBATCHPT "número de lote duplicado" /* duplicate batch */
+#define EINVBATCHPT "lote inválido" /* invalid batch */
+#define EINVNAMEPT "nome inválido" /* invalid name */
+#define EINVDATEPT "data inválida" /* invalid name */
+#define EINVQUANTITYPT "quantidade inválida" /* invalid quantity*/
+#define ENOSUCHVACPT "vacina inexistente" /* there is no such vaccine*/
+#define ENOSTOCKPT "esgotado" /* no stock */
+#define EALREADYVACPT "já vacinado" /* already vaccinated */
+#define ENOSUCHBATCHPT "lote inexistente" /* no such batch*/
+#define ENOSUCHUSERPT "utente inexistente" /* no such user */ 
+#define ENOMEMORYPT "sem memória" /* no memory */
 
+/* Struct for a date */
 typedef struct {
     int day, month, year;
-} Date; /* Struct for a date */
+} Date; 
 
+/* Struct for a batch */
 typedef struct {
     char name[MAXNAME + 1];
     char batch[MAXBATCH + 1];
     Date expiry;
     int doses;
     int applications;
-} Batch; /* Struct for a batch */
+} Batch; 
 
+/* Struct for an Inoculation */
 typedef struct {
     char user_name[201]; 
     char batch[MAXBATCH + 1];
     Date application_date;
-} Inoculation; /* Struct for an Inoculation */
+} Inoculation; 
 
+/* Struct for the system and registers info */
 typedef struct {
     Batch batches[MAXVACCINES];      
     int batch_count;      
@@ -64,14 +68,16 @@ typedef struct {
 
     Date current_date;
     int language; /* 0 for English, 1 for Portuguese */
-} Sys; /* Struct for the system and save info */
+} Sys; 
 
+/* Gets an error depending on the language choosen by the user */
 static const char* get_error(Sys *sys, const char *english, const char *portuguese) {
     return (sys->language == 1) ? portuguese : english;
 }
 
-static void initialize_system(Sys *sys) {
-    sys->batch_count = 0; /* Initializes the system and keeps track of information*/
+/* Initializes the system and keeps track of information*/
+static void initialize_system(Sys *sys) { 
+    sys->batch_count = 0; 
     sys->inoculation_count = 0;
     sys->inoculation_capacity = 10;
     sys->inoculations = malloc(sys->inoculation_capacity * sizeof(Inoculation));
@@ -84,6 +90,7 @@ static void initialize_system(Sys *sys) {
     sys->current_date.year = 2025;
 }
 
+/* Gets the number of days in a certain month */
 static int days_in_month(int month, int year) {
     (void)year;
     switch (month) {
@@ -93,12 +100,14 @@ static int days_in_month(int month, int year) {
     }
 }
 
+/* Checks if a date is valid */
 static int is_valid_date(int day, int month, int year) {
     if (month < 1 || month > 12) return 0; 
     if (day < 1 || day > days_in_month(month, year)) return 0; 
     return 1;
 }
 
+/* Compares two dates */
 static int compare_dates(Date d1, Date d2) {
     if (d1.year != d2.year) return (d1.year < d2.year) ? -1 : 1;
     if (d1.month != d2.month) return (d1.month < d2.month) ? -1 : 1;
@@ -106,21 +115,23 @@ static int compare_dates(Date d1, Date d2) {
     return 0;
 }
 
-
+/* Serches for a batch in the Sys */
 static int search_batch(Sys *sys, char *batch) {
     for (int i = 0; i < sys->batch_count; i++)
-        if (!strcmp(batch, sys->batches[i].batch)) /* If batch does not exist in the Sys */
+        if (!strcmp(batch, sys->batches[i].batch)) /* If batch does exist in the Sys */
             return i; /* Returns the batch index */
     return -1; /* If it does not exist returns -1 */
 }
 
-static void print_batch(Batch batch) { /* Prints  the batch information */
+/* Prints the batch information */
+static void print_batch(Batch batch) { 
     printf("%s %s %02d-%02d-%04d %d %d\n", 
            batch.name, batch.batch, 
            batch.expiry.day, batch.expiry.month, batch.expiry.year, 
            batch.doses, batch.applications);
 }
 
+/* Checks if a name is valid for a batch */
 static int is_valid_batch_name(const char *batch) {
     for (int i = 0; batch[i] != '\0'; i++) {
         if (!isdigit(batch[i]) && (batch[i] < 'A' || batch[i] > 'F')) {
@@ -130,6 +141,7 @@ static int is_valid_batch_name(const char *batch) {
     return 1; 
 }
 
+/* Extracts a quoted name from a string */
 static char* extract_quoted_name(char *input, char *output, int max_len) {
     char *start = strchr(input, '"'); 
     if (!start) return NULL; 
@@ -146,6 +158,7 @@ static char* extract_quoted_name(char *input, char *output, int max_len) {
     return end + 1; 
 }
 
+/* Adds a batch to the Sys */
 static void add_batch(Sys *sys, char *info) {
     char batch[MAXBATCH + 1], name[MAXNAME + 2];
     int day, month, year, doses;
@@ -192,6 +205,7 @@ static void add_batch(Sys *sys, char *info) {
     printf("%s\n", batch);
 }
 
+/* List all the batches or the ones from the given vaccines */
 static void list_batches(Sys *sys, char *info) {
     char *token = strtok(info + 1, " \t\n");  /* Remove the 'l' and split arguments */
     for (int i = 0; i < sys->batch_count - 1; i++) { /*  Sort batches first */
@@ -225,6 +239,7 @@ static void list_batches(Sys *sys, char *info) {
     }
 }
 
+/* Searches if a user is already vaccinated with a certain vaccine*/
 static int search_user(Sys *sys, char *user, char *vaccine) {
     for (int i = 0; i < sys->inoculation_count; i++) {
         int batch_index = search_batch(sys, sys->inoculations[i].batch);
@@ -238,6 +253,7 @@ static int search_user(Sys *sys, char *user, char *vaccine) {
     return -1; /* The user was not already vaccinated today with this vaccine */
 }
 
+/* Finds the oldest valid batch of a given vaccine */
 static int find_oldest_valid_batch(Sys *sys, char *vaccine) {
     int oldest_index = -1;
 
@@ -258,7 +274,7 @@ static int find_oldest_valid_batch(Sys *sys, char *vaccine) {
     return oldest_index; /* Returns the index of the oldest valid batch or -1 if there's none */
 }
 
-
+/* Applies a vaccine to a user */
 static void apply_vaccine(Sys *sys, char *info) {
     char user_name[201], vaccine[MAXNAME + 1];
     // Check if we have a quoted name
@@ -325,8 +341,7 @@ static void apply_vaccine(Sys *sys, char *info) {
     printf("%s\n", batch->batch);
 }
 
-
-
+/* Removes a batch from the system or stes doses to 0 if there are inoculations */
 static void remove_batch(Sys *sys, char *info) {
     char batch_id[MAXBATCH + 1];
 
@@ -344,7 +359,7 @@ static void remove_batch(Sys *sys, char *info) {
         sys->batches[index].doses = 0; 
         return;
     }
-    /* IF batch has no applications, removes the batch and moves the elementes to the left */
+    /* If batch has no applications, removes the batch and moves the elementes to the left */
     for (int i = index; i < sys->batch_count - 1; i++) {
         sys->batches[i] = sys->batches[i + 1];
     }
@@ -352,7 +367,7 @@ static void remove_batch(Sys *sys, char *info) {
     printf("0\n"); 
 }
 
-
+/* Deletes one or many inoculations from the system */
 static void delete_inoculation(Sys *sys, char *info) {
     char user_name[201], batch[MAXBATCH + 1];
     int day = -1, month = -1, year = -1;
@@ -399,6 +414,7 @@ static void delete_inoculation(Sys *sys, char *info) {
     }
 }
 
+/* Lists all inoculations in the system */
 static void list_inoculations(Sys *sys, char *info) {
     char user_name[201];
     int has_user = sscanf(info, "%*s %200s", user_name);
@@ -428,6 +444,7 @@ static void list_inoculations(Sys *sys, char *info) {
     }
 }
 
+/*Tells the system date or advances it to the given date */
 static void advance_time(Sys *sys, char *info) {
     int day, month, year;
     int num_args = sscanf(info, "%*s %d-%d-%d", &day, &month, &year);
@@ -445,8 +462,7 @@ static void advance_time(Sys *sys, char *info) {
     printf("%02d-%02d-%04d\n", sys->current_date.day, sys->current_date.month, sys->current_date.year);
 }
 
-
-
+/* Frees the system memory */
 static void free_system(Sys *sys) {
     if (sys->inoculations) {
         free(sys->inoculations);
@@ -454,6 +470,7 @@ static void free_system(Sys *sys) {
     }
 }
 
+/* Vaccine Management system */
 int main(int argc, char *argv[]) {
     char buf[BUFMAX];
     Sys sys = {0};  
