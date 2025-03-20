@@ -182,7 +182,7 @@ static void add_batch(Sys *sys, char *info) {
     Batch *new_batch = &sys->batches[sys->batch_count++];
 
     strncpy(new_batch->batch, batch, MAXBATCH);
-    new_batch->batch[MAXBATCH] = '\0'; // Garantir terminação da string
+    new_batch->batch[MAXBATCH] = '\0';
 
     strncpy(new_batch->name, name, MAXNAME);
     new_batch->name[MAXNAME] = '\0'; 
