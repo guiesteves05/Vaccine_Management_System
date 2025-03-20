@@ -181,7 +181,11 @@ static void add_batch(Sys *sys, char *info) {
 
     Batch *new_batch = &sys->batches[sys->batch_count++];
     strncpy(new_batch->batch, batch, MAXBATCH);
+    new_batch->batch[MAXBATCH] = '\0';  
+
     strncpy(new_batch->name, name, MAXNAME);
+    new_batch->name[MAXNAME] = '\0';
+
     new_batch->expiry.day = day;
     new_batch->expiry.month = month;
     new_batch->expiry.year = year;
@@ -312,10 +316,14 @@ static void apply_vaccine(Sys *sys, char *info) {
     }
     /* Registers the inoculation */
     Inoculation *new_inoculation = &sys->inoculations[sys->inoculation_count++];
-    strncpy(new_inoculation->user_name, user_name, 200);
-    strncpy(new_inoculation->batch, batch->batch, MAXBATCH);
-    new_inoculation->application_date = sys->current_date;
 
+    strncpy(new_inoculation->user_name, user_name, 200);
+    new_inoculation->user_name[200] = '\0';  
+
+    strncpy(new_inoculation->batch, batch->batch, MAXBATCH);
+    new_inoculation->batch[MAXBATCH] = '\0';  
+    
+    new_inoculation->application_date = sys->current_date;
     printf("%s\n", batch->batch);
 }
 
@@ -450,14 +458,13 @@ static void free_system(Sys *sys) {
 
 int main(int argc, char *argv[]) {
     char buf[BUFMAX];
-    Sys sys;
+    Sys sys = {0};  
 
     initialize_system(&sys);
     sys.language = (argc > 1 && strcmp(argv[1], "pt") == 0) ? 1 : 0;
 
-
-    while(fgets(buf, BUFMAX, stdin)) 
-        switch(buf[0]) {
+    while (fgets(buf, BUFMAX, stdin)) {
+        switch (buf[0]) {
             case 'q': free_system(&sys); return 0;
             case 'c': add_batch(&sys, buf); break;
             case 'l': list_batches(&sys, buf); break;
@@ -467,6 +474,7 @@ int main(int argc, char *argv[]) {
             case 'u': list_inoculations(&sys, buf); break;
             case 't': advance_time(&sys, buf); break;
         }
+    }
     free_system(&sys);
     return 0;
 }
