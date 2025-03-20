@@ -180,11 +180,12 @@ static void add_batch(Sys *sys, char *info) {
     }
 
     Batch *new_batch = &sys->batches[sys->batch_count++];
+
     strncpy(new_batch->batch, batch, MAXBATCH);
-    new_batch->batch[MAXBATCH] = '\0';  
+    new_batch->batch[MAXBATCH] = '\0'; // Garantir terminação da string
 
     strncpy(new_batch->name, name, MAXNAME);
-    new_batch->name[MAXNAME] = '\0';
+    new_batch->name[MAXNAME] = '\0'; 
 
     new_batch->expiry.day = day;
     new_batch->expiry.month = month;
@@ -322,7 +323,7 @@ static void apply_vaccine(Sys *sys, char *info) {
 
     strncpy(new_inoculation->batch, batch->batch, MAXBATCH);
     new_inoculation->batch[MAXBATCH] = '\0';  
-    
+
     new_inoculation->application_date = sys->current_date;
     printf("%s\n", batch->batch);
 }
