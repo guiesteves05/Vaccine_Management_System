@@ -277,19 +277,19 @@ static int find_oldest_valid_batch(Sys *sys, char *vaccine) {
 /** Applies a vaccine to a user */
 static void apply_vaccine(Sys *sys, char *info) {
     char user_name[201], vaccine[MAXNAME + 1];
-    // Check if we have a quoted name
+    /*Check if whas quotes */
     if (strchr(info, '"') != NULL) {
-        // Extract the quoted name
+        /* Extract the quoted name */
         char *end_quote = extract_quoted_name(info, user_name, 201);
         if (!end_quote) {
             puts(get_error(sys, EINVNAME, EINVNAMEPT));
             return;
         }
-        // Find the vaccine name after the quoted name
-        // Skip spaces after the closing quote
+        /* Find the vaccine name after the quoted name*/
+        /* Skip spaces after the closing quote */
         while (*end_quote == ' ' || *end_quote == '\t') end_quote++;
         
-        // Copy the vaccine name (everything until end of line or next space)
+        /* Copy the vaccine name (everything until end of line or next space)*/ 
         int i = 0;
         while (end_quote[i] && end_quote[i] != ' ' && end_quote[i] != '\n' && end_quote[i] != '\r' && i < MAXNAME) {
             vaccine[i] = end_quote[i];
@@ -297,13 +297,11 @@ static void apply_vaccine(Sys *sys, char *info) {
         }
         vaccine[i] = '\0';
     } else {
-        // No quotes, simple space-separated format
+        /* No quotes */
         if (sscanf(info, "%*c %200s %50s", user_name, vaccine) != 2) {
-            return; // Not enough arguments
+            return; 
         }
-    }
-    //printf("DEBUG: User='%s', Vaccine='%s'\n", user_name, vaccine);
-    
+    }    
     int batch_index = find_oldest_valid_batch(sys, vaccine);
     if (batch_index == -1) {
         puts(get_error(sys, ENOSTOCK, ENOSTOCKPT));
@@ -493,4 +491,3 @@ int main(int argc, char *argv[]) {
     free_system(&sys);
     return 0;
 }
-
