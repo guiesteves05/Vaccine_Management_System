@@ -1,5 +1,8 @@
-/* iaed25 - ist1114298 - project */
-
+/** iaed25 - ist1114298 - project 
+ * Program for a System managing vaccines, inocculations and users
+ * @file: VacManager2025
+ * @author: ist1114298 (Guilherme Esteves) 
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -41,7 +44,7 @@ typedef struct {
     int day, month, year; /**< date */
 } Date; 
 
-/* Struct for a batch */
+/** Struct for a batch */
 typedef struct {
     char name[MAXNAME + 1]; /**< vaccine name */
     char batch[MAXBATCH + 1]; /**< batch number */
@@ -70,12 +73,22 @@ typedef struct {
     int language; /**< 0 for English, 1 for Portuguese */
 } Sys; 
 
-/** Gets an error depending on the language choosen by the user */
+
+
+
+/** Gets an error depending on the language choosen by the user 
+ * @param sys pointer to the system
+ * @param english error message in english
+ * @param portuguese error message in portuguese
+ * @return 1 if te language is portuguese, 0 if english
+*/
 static const char* get_error(Sys *sys, const char *english, const char *portuguese) {
     return (sys->language == 1) ? portuguese : english;
 }
 
-/** Initializes the system and keeps track of information*/
+/** Initializes the system and keeps track of information
+ * @param sys pointer to the system
+*/
 static void initialize_system(Sys *sys) { 
     sys->batch_count = 0; 
     sys->inoculation_count = 0;
@@ -90,7 +103,10 @@ static void initialize_system(Sys *sys) {
     sys->current_date.year = 2025;
 }
 
-/** Gets the number of days in a certain month */
+/** Gets the number of days in a certain month 
+ * @param month month of the date
+ * @param year year of the date
+*/
 static int days_in_month(int month, int year) {
     (void)year;
     switch (month) {
@@ -100,14 +116,23 @@ static int days_in_month(int month, int year) {
     }
 }
 
-/** Checks if a date is valid */
+/** Checks if a date is valid 
+ * @param day day of the date
+ * @param month month of the date
+ * @param year year of the date
+ * @return 1 if the date is valid, 0 otherwise
+*/
 static int is_valid_date(int day, int month, int year) {
     if (month < 1 || month > 12) return 0; 
     if (day < 1 || day > days_in_month(month, year)) return 0; 
     return 1;
 }
 
-/** Compares two dates */
+/** Compares two dates
+ * @param d1 first date
+ * @param d2 second date
+ * @return -1 if d1 is before d2, 1 if d1 is after d2, 0 if they are equal
+*/
 static int compare_dates(Date d1, Date d2) {
     if (d1.year != d2.year) return (d1.year < d2.year) ? -1 : 1;
     if (d1.month != d2.month) return (d1.month < d2.month) ? -1 : 1;
@@ -115,7 +140,11 @@ static int compare_dates(Date d1, Date d2) {
     return 0;
 }
 
-/** Searches for a batch in the Sys */
+/** Searches for a batch in the Sys 
+ * @param sys pointer to thesystem
+ * @param batch pointer to the batch to search for
+ * @return the index of the batch in the Sys, -1 if it does not exist
+*/
 static int search_batch(Sys *sys, char *batch) {
     for (int i = 0; i < sys->batch_count; i++)
         if (!strcmp(batch, sys->batches[i].batch)) /* If batch does exist in the Sys */
@@ -123,7 +152,9 @@ static int search_batch(Sys *sys, char *batch) {
     return -1; /* If it does not exist returns -1 */
 }
 
-/** Prints the batch information */
+/** Prints the batch information 
+ * @param batch batch to print
+*/
 static void print_batch(Batch batch) { 
     printf("%s %s %02d-%02d-%04d %d %d\n", 
            batch.name, batch.batch, 
@@ -131,7 +162,10 @@ static void print_batch(Batch batch) {
            batch.doses, batch.applications);
 }
 
-/** Checks if a name is valid for a batch */
+/** Checks if a name is valid for a batch 
+ * @param batch pointer to the batch to check
+ * @return 1 if the name is valid, 0 otherwise
+*/
 static int is_valid_batch_name(const char *batch) {
     for (int i = 0; batch[i] != '\0'; i++) {
         if (!isdigit(batch[i]) && (batch[i] < 'A' || batch[i] > 'F')) {
@@ -141,7 +175,11 @@ static int is_valid_batch_name(const char *batch) {
     return 1; 
 }
 
-/** Extracts a quoted name from a string */
+/** Extracts a quoted name from a string 
+ * @param input pointer to the input string to extract from
+ * @param output pointer to the output string to store the name
+ * @param max_len maximum length of the output string
+*/
 static char* extract_quoted_name(char *input, char *output, int max_len) {
     char *start = strchr(input, '"'); 
     if (!start) return NULL; 
