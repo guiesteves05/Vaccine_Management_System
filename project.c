@@ -179,6 +179,7 @@ static int is_valid_batch_name(const char *batch) {
  * @param input pointer to the input string to extract from
  * @param output pointer to the output string to store the name
  * @param max_len maximum length of the output string
+ * @return pointer to the end of the extracted name
 */
 static char* extract_quoted_name(char *input, char *output, int max_len) {
     char *start = strchr(input, '"'); 
@@ -196,7 +197,10 @@ static char* extract_quoted_name(char *input, char *output, int max_len) {
     return end + 1; 
 }
 
-/** Adds a batch to the Sys */
+/** Adds a batch to the Sys 
+ * @param sys pointer to the Sys
+ * @param info pointer to the input info to the batch
+*/
 static void add_batch(Sys *sys, char *info) {
     char batch[MAXBATCH + 1], name[MAXNAME + 2];
     int day, month, year, doses;
@@ -243,7 +247,10 @@ static void add_batch(Sys *sys, char *info) {
     printf("%s\n", batch);
 }
 
-/** List all the batches or the ones from the given vaccines */
+/** List all the batches or the ones from the given vaccines 
+ * @param sys system
+ * @param info input string with the command and arguments
+*/
 static void list_batches(Sys *sys, char *info) {
     char *token = strtok(info + 1, " \t\n");  /* Remove the 'l' and split arguments */
     for (int i = 0; i < sys->batch_count - 1; i++) { /*  Sort batches first */
@@ -277,7 +284,12 @@ static void list_batches(Sys *sys, char *info) {
     }
 }
 
-/** Searches if a user is already vaccinated with a certain vaccine*/
+/** Searches if a user is already vaccinated with a certain vaccine
+ * @param sys system
+ * @param user user to search for
+ * @param vaccine vaccine to search for
+ * @return the batch index of the user's vaccination or -1 if not found
+*/
 static int search_user(Sys *sys, char *user, char *vaccine) {
     for (int i = 0; i < sys->inoculation_count; i++) {
         int batch_index = search_batch(sys, sys->inoculations[i].batch);
@@ -291,7 +303,11 @@ static int search_user(Sys *sys, char *user, char *vaccine) {
     return -1; /* The user was not already vaccinated today with this vaccine */
 }
 
-/** Finds the oldest valid batch of a given vaccine */
+/** Finds the oldest valid batch of a given vaccine 
+ * @param sys system
+ * @param vaccine vaccine to search for
+ * @return the index of the oldest valid batch of the vaccine or -1 if there's none
+*/
 static int find_oldest_valid_batch(Sys *sys, char *vaccine) {
     int oldest_index = -1;
 
@@ -312,7 +328,10 @@ static int find_oldest_valid_batch(Sys *sys, char *vaccine) {
     return oldest_index; /* Returns the index of the oldest valid batch or -1 if there's none */
 }
 
-/** Applies a vaccine to a user */
+/** Applies a vaccine to a user 
+ * @param sys system
+ * @param info info to apply the inocculation to a user
+*/
 static void apply_vaccine(Sys *sys, char *info) {
     char user_name[201], vaccine[MAXNAME + 1];
     /*Check if whas quotes */
@@ -377,7 +396,10 @@ static void apply_vaccine(Sys *sys, char *info) {
     printf("%s\n", batch->batch);
 }
 
-/** Removes a batch from the system or stes doses to 0 if there are inoculations */
+/** Removes a batch from the system or stes doses to 0 if there are inoculations 
+ * @param sys the system
+ * @param info the instruction for the batch removal
+*/
 static void remove_batch(Sys *sys, char *info) {
     char batch_id[MAXBATCH + 1];
 
@@ -403,7 +425,10 @@ static void remove_batch(Sys *sys, char *info) {
     printf("0\n"); 
 }
 
-/** Deletes one or many inoculations from the system */
+/** Deletes one or many inoculations from the system 
+ * @param sys the system
+ * @param info the instruction for the inoculation deletion
+*/
 static void delete_inoculation(Sys *sys, char *info) {
     char user_name[201], batch[MAXBATCH + 1];
     int day = -1, month = -1, year = -1;
@@ -450,7 +475,10 @@ static void delete_inoculation(Sys *sys, char *info) {
     }
 }
 
-/** Lists all inoculations in the system */
+/** Lists all inoculations in the system 
+ * @param sys the system
+ * @param info the info for which inocculations to list
+*/
 static void list_inoculations(Sys *sys, char *info) {
     char user_name[201];
     int has_user = sscanf(info, "%*s %200s", user_name);
@@ -480,7 +508,10 @@ static void list_inoculations(Sys *sys, char *info) {
     }
 }
 
-/** Tells the system date or advances it to the given date */
+/** Tells the system date or advances it to the given date 
+ * @param sys the system
+ * @param info the info for which date to list or advance to
+*/
 static void advance_time(Sys *sys, char *info) {
     int day, month, year;
     int num_args = sscanf(info, "%*s %d-%d-%d", &day, &month, &year);
@@ -498,7 +529,9 @@ static void advance_time(Sys *sys, char *info) {
     printf("%02d-%02d-%04d\n", sys->current_date.day, sys->current_date.month, sys->current_date.year);
 }
 
-/** Frees the system memory */
+/** Frees the system memory 
+ * @param sys the system
+*/
 static void free_system(Sys *sys) {
     if (sys->inoculations) {
         free(sys->inoculations);
@@ -506,7 +539,11 @@ static void free_system(Sys *sys) {
     }
 }
 
-/** Vaccine Management System */
+/** Vaccine Management System 
+ * @param argc the number of arguments
+ * @param argv the arguments for the language
+ * @return 0 always
+*/
 int main(int argc, char *argv[]) {
     char buf[BUFMAX];
     Sys sys = {0};  
