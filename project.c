@@ -452,7 +452,6 @@ static void delete_inoculation(Sys *sys, char *info) {
             (num_args < 3 || compare_dates(vac->application_date, target_date) == 0) &&
             (num_args < 5 || strcmp(vac->batch, batch) == 0)) {
             
-
             for (int j = i; j < sys->inoculation_count - 1; j++) {
                 sys->inoculations[j] = sys->inoculations[j + 1];
             } /* Remove the inoculation from the array */
