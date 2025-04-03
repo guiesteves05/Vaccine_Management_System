@@ -422,7 +422,7 @@ static void remove_batch(Sys *sys, char *info) {
         sys->batches[i] = sys->batches[i + 1];
     }
     sys->batch_count--;
-    printf("0\n"); 
+    printf("0\n");
 }
 
 /** Deletes one or many inoculations from the system 
