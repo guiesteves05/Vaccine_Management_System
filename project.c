@@ -73,9 +73,6 @@ typedef struct {
     int language; /**< 0 for English, 1 for Portuguese */
 } Sys; 
 
-
-
-
 /** Gets an error depending on the language choosen by the user 
  * @param sys pointer to the system
  * @param english error message in english
@@ -455,10 +452,6 @@ static void delete_inoculation(Sys *sys, char *info) {
             (num_args < 3 || compare_dates(vac->application_date, target_date) == 0) &&
             (num_args < 5 || strcmp(vac->batch, batch) == 0)) {
             
-            int batch_index = search_batch(sys, vac->batch);
-            if (batch_index != -1) {
-                sys->batches[batch_index].applications--;
-            } /* Update application count */
 
             for (int j = i; j < sys->inoculation_count - 1; j++) {
                 sys->inoculations[j] = sys->inoculations[j + 1];
