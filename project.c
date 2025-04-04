@@ -55,10 +55,10 @@ typedef struct {
 
 /* Struct for an Inoculation */
 typedef struct {
-    char user_name[201];  /**< user name */
+    char *user_name;  /**< user name (dynamically allocated) */
     char batch[MAXBATCH + 1]; /**< batch number */
     Date application_date; /**< date of the inoculation*/
-} Inoculation; 
+} Inoculation;
 
 /* Struct for the system and registers info */
 typedef struct {
@@ -172,27 +172,7 @@ static int is_valid_batch_name(const char *batch) {
     return 1; 
 }
 
-/** Extracts a quoted name from a string 
- * @param input pointer to the input string to extract from
- * @param output pointer to the output string to store the name
- * @param max_len maximum length of the output string
- * @return pointer to the end of the extracted name
-*/
-static char* extract_quoted_name(char *input, char *output, int max_len) {
-    char *start = strchr(input, '"'); 
-    if (!start) return NULL; 
 
-    start++; 
-    char *end = strchr(start, '"'); 
-    if (!end) return NULL; 
-
-    int len = end - start; 
-    if (len >= max_len) len = max_len - 1; 
-
-    strncpy(output, start, len);
-    output[len] = '\0'; 
-    return end + 1; 
-}
 
 /** Adds a batch to the Sys 
  * @param sys pointer to the Sys
@@ -330,20 +310,36 @@ static int find_oldest_valid_batch(Sys *sys, char *vaccine) {
  * @param info info to apply the inocculation to a user
 */
 static void apply_vaccine(Sys *sys, char *info) {
-    char user_name[201], vaccine[MAXNAME + 1];
-    /*Check if whas quotes */
+    char *user_name = NULL;
+    char vaccine[MAXNAME + 1];
+    
+    /* Check if there are quotes */
     if (strchr(info, '"') != NULL) {
         /* Extract the quoted name */
-        char *end_quote = extract_quoted_name(info, user_name, 201);
+        char *start_quote = strchr(info, '"');
+        char *end_quote = strchr(start_quote + 1, '"');
         if (!end_quote) {
             puts(get_error(sys, EINVNAME, EINVNAMEPT));
             return;
         }
-        /* Find the vaccine name after the quoted name*/
-        /* Skip spaces after the closing quote */
+        
+        /* Calculate length and allocate memory */
+        size_t name_length = end_quote - (start_quote + 1);
+        user_name = malloc(name_length + 1);
+        if (!user_name) {
+            puts(get_error(sys, ENOMEMORY, ENOMEMORYPT));
+            exit(1);
+        }
+        
+        /* Copy the name (excluding quotes) */
+        strncpy(user_name, start_quote + 1, name_length);
+        user_name[name_length] = '\0';
+        
+        /* Find the vaccine name after the quoted name */
+        end_quote++;
         while (*end_quote == ' ' || *end_quote == '\t') end_quote++;
         
-        /* Copy the vaccine name (everything until end of line or next space)*/ 
+        /* Copy the vaccine name */
         int i = 0;
         while (end_quote[i] && end_quote[i] != ' ' && end_quote[i] != '\n' && end_quote[i] != '\r' && i < MAXNAME) {
             vaccine[i] = end_quote[i];
@@ -352,46 +348,60 @@ static void apply_vaccine(Sys *sys, char *info) {
         vaccine[i] = '\0';
     } else {
         /* No quotes */
-        if (sscanf(info, "%*c %200s %50s", user_name, vaccine) != 2) {
-            return; 
+        char temp_name[BUFMAX];
+        if (sscanf(info, "%*c %s %50s", temp_name, vaccine) != 2) {
+            return;
         }
-    }    
+        
+        user_name = malloc(strlen(temp_name) + 1);
+        if (!user_name) {
+            puts(get_error(sys, ENOMEMORY, ENOMEMORYPT));
+            exit(1);
+        }
+        strcpy(user_name, temp_name);
+    }
+
     int batch_index = find_oldest_valid_batch(sys, vaccine);
     if (batch_index == -1) {
+        free(user_name);
         puts(get_error(sys, ENOSTOCK, ENOSTOCKPT));
         return;
     }
 
     if (search_user(sys, user_name, vaccine) != -1) {
+        free(user_name);
         puts(get_error(sys, EALREADYVAC, EALREADYVACPT));
         return;
     }
+
     /* Updates the batch */
     Batch *batch = &sys->batches[batch_index];
     batch->doses--;
     batch->applications++;
+    
     /* Expands the array if necessary */
     if (sys->inoculation_count >= sys->inoculation_capacity) {
         sys->inoculation_capacity *= 2;
-        Inoculation *new_array = realloc(sys->inoculations, sys->inoculation_capacity * sizeof(Inoculation));
+        Inoculation *new_array = realloc(sys->inoculations, 
+                                       sys->inoculation_capacity * sizeof(Inoculation));
         if (!new_array) {
+            free(user_name);
             puts(get_error(sys, ENOMEMORY, ENOMEMORYPT));
             exit(1);
         }
         sys->inoculations = new_array;
     }
+    
     /* Registers the inoculation */
     Inoculation *new_inoculation = &sys->inoculations[sys->inoculation_count++];
-
-    strncpy(new_inoculation->user_name, user_name, 200);
-    new_inoculation->user_name[200] = '\0';  
-
+    new_inoculation->user_name = user_name;
     strncpy(new_inoculation->batch, batch->batch, MAXBATCH);
-    new_inoculation->batch[MAXBATCH] = '\0';  
-
+    new_inoculation->batch[MAXBATCH] = '\0';
     new_inoculation->application_date = sys->current_date;
+    
     printf("%s\n", batch->batch);
 }
+
 
 /** Removes a batch from the system or stes doses to 0 if there are inoculations 
  * @param sys the system
@@ -427,45 +437,93 @@ static void remove_batch(Sys *sys, char *info) {
  * @param info the instruction for the inoculation deletion
 */
 static void delete_inoculation(Sys *sys, char *info) {
-    char user_name[201], batch[MAXBATCH + 1];
+    char *user_name = NULL;
+    char batch[MAXBATCH + 1] = {0};
     int day = -1, month = -1, year = -1;
     int num_deleted = 0;
-    Date target_date = {-1, -1, -1}; 
-
-    int num_args = sscanf(info, "%*s %200s %d-%d-%d %20s", user_name, &day, &month, &year, batch);
-
-    if (num_args >= 3) {
+    Date target_date = {-1, -1, -1};
+    
+    /* Extract user name */
+    if (strchr(info, '"') != NULL) {
+        char *start_quote = strchr(info, '"');
+        char *end_quote = strchr(start_quote + 1, '"');
+        if (!end_quote) {
+            puts(get_error(sys, EINVNAME, EINVNAMEPT));
+            return;
+        }
+        
+        size_t name_length = end_quote - (start_quote + 1);
+        user_name = malloc(name_length + 1);
+        if (!user_name) {
+            puts(get_error(sys, ENOMEMORY, ENOMEMORYPT));
+            exit(1);
+        }
+        
+        strncpy(user_name, start_quote + 1, name_length);
+        user_name[name_length] = '\0';
+        
+        /* Parse the rest after the quoted name */
+        sscanf(end_quote + 1, "%d-%d-%d %20s", &day, &month, &year, batch);
+    } else {
+        char temp_name[BUFMAX];
+        int num_args = sscanf(info, "%*s %s %d-%d-%d %20s", temp_name, &day, &month, &year, batch);
+        if (num_args < 1) return;
+        
+        user_name = malloc(strlen(temp_name) + 1);
+        if (!user_name) {
+            puts(get_error(sys, ENOMEMORY, ENOMEMORYPT));
+            exit(1);
+        }
+        strcpy(user_name, temp_name);
+    }
+    
+    /* Validate date if provided */
+    if (day != -1) {
         target_date = (Date){day, month, year};
         if (!is_valid_date(day, month, year) || compare_dates(target_date, sys->current_date) > 0) {
+            free(user_name);
             puts(get_error(sys, EINVDATE, EINVDATEPT));
-            return; /* If date provided */
+            return;
         }
     }
-    if (num_args == 5 && search_batch(sys, batch) == -1) {
+    
+    /* Validate batch if provided */
+    if (batch[0] != '\0' && search_batch(sys, batch) == -1) {
+        free(user_name);
         printf("%s: %s\n", batch, get_error(sys, ENOSUCHBATCH, ENOSUCHBATCHPT));
-        return; /* If batch provided */
+        return;
     }
+
+    /* Delete matching inoculations */
     for (int i = 0; i < sys->inoculation_count; i++) {
         Inoculation *vac = &sys->inoculations[i];
-
+        
         if (strcmp(vac->user_name, user_name) == 0 &&
-            (num_args < 3 || compare_dates(vac->application_date, target_date) == 0) &&
-            (num_args < 5 || strcmp(vac->batch, batch) == 0)) {
+            (day == -1 || compare_dates(vac->application_date, target_date) == 0) &&
+            (batch[0] == '\0' || strcmp(vac->batch, batch) == 0)) {
             
+            free(vac->user_name);
+            
+            /* Move remaining inoculations */
             for (int j = i; j < sys->inoculation_count - 1; j++) {
                 sys->inoculations[j] = sys->inoculations[j + 1];
-            } /* Remove the inoculation from the array */
+            }
+            
             sys->inoculation_count--;
             num_deleted++;
-            i--; 
+            i--;
         }
     }
+    
     if (num_deleted == 0) {
         printf("%s: %s\n", user_name, get_error(sys, ENOSUCHUSER, ENOSUCHUSERPT));
     } else {
         printf("%d\n", num_deleted);
     }
+    
+    free(user_name);
 }
+
  
 /** Lists all inoculations in the system 
  * @param sys the system
@@ -526,10 +584,16 @@ static void advance_time(Sys *sys, char *info) {
 */
 static void free_system(Sys *sys) {
     if (sys->inoculations) {
+        /* Free each user_name string */
+        for (int i = 0; i < sys->inoculation_count; i++) {
+            free(sys->inoculations[i].user_name);
+        }
+        /* Free the inoculations array */
         free(sys->inoculations);
-        sys->inoculations = NULL; 
+        sys->inoculations = NULL;
     }
 }
+
 
 /** Vaccine Management System 
  * @param argc the number of arguments
