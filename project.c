@@ -466,7 +466,7 @@ static void delete_inoculation(Sys *sys, char *info) {
         printf("%d\n", num_deleted);
     }
 }
-
+ 
 /** Lists all inoculations in the system 
  * @param sys the system
  * @param info the info for which inocculations to list
