@@ -55,7 +55,7 @@ typedef struct {
 
 /* Struct for an Inoculation */
 typedef struct {
-    char *user_name;  /**< user name (dynamically allocated) */
+    char *user_name;  /**< user name */
     char batch[MAXBATCH + 1]; /**< batch number */
     Date application_date; /**< date of the inoculation*/
 } Inoculation;
@@ -171,8 +171,6 @@ static int is_valid_batch_name(const char *batch) {
     }
     return 1; 
 }
-
-
 
 /** Adds a batch to the Sys 
  * @param sys pointer to the Sys
@@ -486,14 +484,13 @@ static void delete_inoculation(Sys *sys, char *info) {
             return;
         }
     }
-    
+
     /* Validate batch if provided */
     if (batch[0] != '\0' && search_batch(sys, batch) == -1) {
         free(user_name);
         printf("%s: %s\n", batch, get_error(sys, ENOSUCHBATCH, ENOSUCHBATCHPT));
         return;
     }
-
     /* Delete matching inoculations */
     for (int i = 0; i < sys->inoculation_count; i++) {
         Inoculation *vac = &sys->inoculations[i];
@@ -514,13 +511,11 @@ static void delete_inoculation(Sys *sys, char *info) {
             i--;
         }
     }
-    
     if (num_deleted == 0) {
         printf("%s: %s\n", user_name, get_error(sys, ENOSUCHUSER, ENOSUCHUSERPT));
     } else {
         printf("%d\n", num_deleted);
     }
-    
     free(user_name);
 }
 
@@ -570,7 +565,6 @@ static void advance_time(Sys *sys, char *info) {
         printf("%02d-%02d-%04d\n", sys->current_date.day, sys->current_date.month, sys->current_date.year);
         return;
     }
-
     if (!is_valid_date(day, month, year) || compare_dates((Date){day, month, year}, sys->current_date) < 0) {
         puts(get_error(sys, EINVDATE, EINVDATEPT)); /* Validate the new date */
         return;
@@ -584,11 +578,9 @@ static void advance_time(Sys *sys, char *info) {
 */
 static void free_system(Sys *sys) {
     if (sys->inoculations) {
-        /* Free each user_name string */
         for (int i = 0; i < sys->inoculation_count; i++) {
             free(sys->inoculations[i].user_name);
         }
-        /* Free the inoculations array */
         free(sys->inoculations);
         sys->inoculations = NULL;
     }
