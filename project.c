@@ -13,18 +13,18 @@
 #define MAXBATCH 20 /**< maximum size of a batch number*/
 #define MAXVACCINES 1000 /**< maximum size of batches in the system */
 
-#define E2MANYVAC "too many vaccines" 
-#define EDUPBATCH "duplicate batch number" 
-#define EINVBATCH "invalid batch"
-#define EINVNAME "invalid name"
-#define EINVDATE "invalid date"
-#define EINVQUANTITY "invalid quantity"
-#define ENOSUCHVAC "no such vaccine"
-#define ENOSTOCK "no stock"
-#define EALREADYVAC "already vaccinated"
-#define ENOSUCHBATCH "no such batch"
-#define ENOSUCHUSER "no such user"
-#define ENOMEMORY "No memory."
+#define E2MANYVAC "too many vaccines" /** excede limite de vacinas */
+#define EDUPBATCH "duplicate batch number" /** lote duplicado */
+#define EINVBATCH "invalid batch" /** lote invalido */
+#define EINVNAME "invalid name" /** nome invalido */
+#define EINVDATE "invalid date" /** data invalida */
+#define EINVQUANTITY "invalid quantity" /** quantidade invalida */
+#define ENOSUCHVAC "no such vaccine" /** não existe essavacina */
+#define ENOSTOCK "no stock" /** sem stock */
+#define EALREADYVAC "already vaccinated" /** já vacinado */
+#define ENOSUCHBATCH "no such batch" /** não existe esse lote */
+#define ENOSUCHUSER "no such user" /** não existe esse utente */
+#define ENOMEMORY "No memory." /** sem memoria */
 
 #define E2MANYVACPT "demasiadas vacinas" /**< excedes vaccine limit */
 #define EDUPBATCHPT "número de lote duplicado" /**< duplicate batch */
@@ -198,7 +198,7 @@ static void add_batch(Sys *sys, char *info) {
     }
     if (!is_valid_date(day, month, year) || compare_dates((Date){day, month, year}, sys->current_date) < 0) {
         puts(get_error(sys, EINVDATE, EINVDATEPT)); /* compare_dates returns -1 if the d1 is before d2*/
-    return;
+        return;
     }
     if (doses <= 0) {
         puts(get_error(sys, EINVQUANTITY, EINVQUANTITYPT));
