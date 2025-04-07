@@ -584,7 +584,7 @@ static void advance_time(Sys *sys, char *info) {
     }
     sys->current_date = (Date){day, month, year}; 
     printf("%02d-%02d-%04d\n", sys->current_date.day, sys->current_date.month, sys->current_date.year);
-}
+} 
 
 /** Frees the system memory 
  * @param sys the system
