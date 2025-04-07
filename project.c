@@ -184,7 +184,8 @@ static void add_batch(Sys *sys, char *info) {
         puts(get_error(sys, E2MANYVAC, E2MANYVACPT));
         return;
     }
-    if (sscanf(info, "%*s %20s %d-%d-%d %d %51s", batch, &day, &month, &year, &doses, name) != 6) {
+    if (sscanf(info, "%*s %20s %d-%d-%d %d %51s",
+                     batch, &day, &month, &year, &doses, name) != 6) {
         puts(get_error(sys, EINVBATCH, EINVBATCHPT));
         return;
     }
@@ -196,7 +197,8 @@ static void add_batch(Sys *sys, char *info) {
         puts(get_error(sys, EDUPBATCH, EDUPBATCHPT));
         return;
     }
-    if (!is_valid_date(day, month, year) || compare_dates((Date){day, month, year}, sys->current_date) < 0) {
+    if (!is_valid_date(day, month, year) || 
+        compare_dates((Date){day, month, year}, sys->current_date) < 0) {
         puts(get_error(sys, EINVDATE, EINVDATEPT)); /* compare_dates returns -1 if the d1 is before d2*/
         return;
     }
