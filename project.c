@@ -505,7 +505,6 @@ static void list_inoculations(Sys *sys, char *info) {
     int has_user = 0;
     int found = 0;
 
-    /* Check if there's a user name in quotes */
     if (strchr(info, '"') != NULL) {
         char *start_quote = strchr(info, '"');
         char *end_quote = strchr(start_quote + 1, '"');
@@ -513,7 +512,6 @@ static void list_inoculations(Sys *sys, char *info) {
             puts(get_error(sys, EINVNAME, EINVNAMEPT));
             return;
         }
-        
         size_t name_length = end_quote - (start_quote + 1);
         user_name = malloc(name_length + 1);
         if (!user_name) {
@@ -526,7 +524,6 @@ static void list_inoculations(Sys *sys, char *info) {
         has_user = 1;
     } 
     else {
-        /* No quotes - read normally */
         char temp_name[BUFMAX];
         if (sscanf(info, "%*s %200s", temp_name) == 1) {
             user_name = malloc(strlen(temp_name) + 1);
@@ -538,8 +535,6 @@ static void list_inoculations(Sys *sys, char *info) {
             has_user = 1;
         }
     }
-
-    /* Sort inoculations by date */
     for (int i = 0; i < sys->inoculation_count - 1; i++) { /* Bubble Sort */
         for (int j = 0; j < sys->inoculation_count - i - 1; j++) {
             if (compare_dates(sys->inoculations[j].application_date, 
@@ -551,12 +546,10 @@ static void list_inoculations(Sys *sys, char *info) {
         }
     }
 
-    /* Print matching inoculations */
     for (int i = 0; i < sys->inoculation_count; i++) {
         Inoculation *vac = &sys->inoculations[i];
-        /* If no user specified or user matches */
         if (!has_user || strcmp(vac->user_name, user_name) == 0) {
-            printf("%s %s %02d-%02d-%04d\n",
+            printf("%s %s %02d-%02d-%04d\n",   /* If no user specified or user matches */
                    vac->user_name, vac->batch,
                    vac->application_date.day, 
                    vac->application_date.month, 
@@ -568,7 +561,6 @@ static void list_inoculations(Sys *sys, char *info) {
     if (has_user && !found) { /* If user was specified but not found */
         printf("%s: %s\n", user_name, get_error(sys, ENOSUCHUSER, ENOSUCHUSERPT));
     }
-
     if (user_name) {
         free(user_name);
     }
