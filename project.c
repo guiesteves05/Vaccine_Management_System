@@ -501,31 +501,76 @@ static void delete_inoculation(Sys *sys, char *info) {
  * @param info the info for which inocculations to list
 */
 static void list_inoculations(Sys *sys, char *info) {
-    char user_name[201];
-    int has_user = sscanf(info, "%*s %200s", user_name);
+    char *user_name = NULL;
+    int has_user = 0;
     int found = 0;
+
+    /* Check if there's a user name in quotes */
+    if (strchr(info, '"') != NULL) {
+        char *start_quote = strchr(info, '"');
+        char *end_quote = strchr(start_quote + 1, '"');
+        if (!end_quote) {
+            puts(get_error(sys, EINVNAME, EINVNAMEPT));
+            return;
+        }
+        
+        size_t name_length = end_quote - (start_quote + 1);
+        user_name = malloc(name_length + 1);
+        if (!user_name) {
+            puts(get_error(sys, ENOMEMORY, ENOMEMORYPT));
+            exit(1);
+        }
+
+        strncpy(user_name, start_quote + 1, name_length);
+        user_name[name_length] = '\0';
+        has_user = 1;
+    } 
+    else {
+        /* No quotes - read normally */
+        char temp_name[BUFMAX];
+        if (sscanf(info, "%*s %200s", temp_name) == 1) {
+            user_name = malloc(strlen(temp_name) + 1);
+            if (!user_name) {
+                puts(get_error(sys, ENOMEMORY, ENOMEMORYPT));
+                exit(1);
+            }
+            strcpy(user_name, temp_name);
+            has_user = 1;
+        }
+    }
+
     /* Sort inoculations by date */
     for (int i = 0; i < sys->inoculation_count - 1; i++) { /* Bubble Sort */
         for (int j = 0; j < sys->inoculation_count - i - 1; j++) {
-            if (compare_dates(sys->inoculations[j].application_date, sys->inoculations[j + 1].application_date) > 0) {
+            if (compare_dates(sys->inoculations[j].application_date, 
+                             sys->inoculations[j + 1].application_date) > 0) {
                 Inoculation temp = sys->inoculations[j];
                 sys->inoculations[j] = sys->inoculations[j + 1];
                 sys->inoculations[j + 1] = temp;
             }
         }
     }
+
+    /* Print matching inoculations */
     for (int i = 0; i < sys->inoculation_count; i++) {
         Inoculation *vac = &sys->inoculations[i];
-        /*If theres is no user or the user is the one we want */
-        if (has_user != 1 || strcmp(vac->user_name, user_name) == 0) {
+        /* If no user specified or user matches */
+        if (!has_user || strcmp(vac->user_name, user_name) == 0) {
             printf("%s %s %02d-%02d-%04d\n",
                    vac->user_name, vac->batch,
-                   vac->application_date.day, vac->application_date.month, vac->application_date.year);
+                   vac->application_date.day, 
+                   vac->application_date.month, 
+                   vac->application_date.year);
             found = 1;
         }
     }
-    if (has_user == 1 && !found) { /* If user was specified but not found, print error */
+
+    if (has_user && !found) { /* If user was specified but not found */
         printf("%s: %s\n", user_name, get_error(sys, ENOSUCHUSER, ENOSUCHUSERPT));
+    }
+
+    if (user_name) {
+        free(user_name);
     }
 }
 
