@@ -1,6 +1,6 @@
 # Vaccine Management & Inoculation System (VacManager)
 
-A high-performance CLI system written in **C (C99)** to manage vaccine batches, patient inoculations, and inventory tracking. Developed for the *Algorithms and Data Structures* (IAED) course at Instituto Superior Técnico.
+A high-performance CLI system written in **C** to manage vaccine batches, patient inoculations, and inventory tracking. Developed for the *Introduction to Algorithms and Data Structures* (IAED) course at Instituto Superior Técnico. It was my first contact with the language **C** and helped me a lot with the understanting of data structures and memory management.
 
 ---
 
@@ -27,6 +27,23 @@ A high-performance CLI system written in **C (C99)** to manage vaccine batches, 
 | `t` | `[date]` | Displays or advances the current system date. |
 | `q` | - | Frees all allocated memory and exits the program. |
 
+## Command Examples
+
+c 123 15-05-2025 100 Pfizer
+c 456 01-03-2025 50 Moderna
+c 789 20-12-2025 10 Johnson
+l
+a "John Doe" Pfizer
+a Jane_Smith Moderna
+u
+t 10-02-2025
+l Pfizer
+a "John Doe" Pfizer
+r 456
+d "John Doe"
+u
+q
+
 ---
 
 ## Tech Stack & Concepts
@@ -42,8 +59,9 @@ A high-performance CLI system written in **C (C99)** to manage vaccine batches, 
 * GCC compiler (or any C99-compliant compiler)
 * Make
 
-### Compilation
+### Compilation and Running
 
 Build using the included `Makefile`:
 ```bash
 make
+./VacManager
