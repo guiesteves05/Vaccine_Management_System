@@ -1,6 +1,6 @@
 # Vaccine Management & Inoculation System (VacManager)
 
-A high-performance CLI system written in **C** to manage vaccine batches, patient inoculations, and inventory tracking. Developed for the *Introduction to Algorithms and Data Structures* (IAED) course at Instituto Superior Técnico. It was my first contact with the language **C** and helped me a lot with the understanting of data structures and memory management.
+A high-performance CLI system written in **C** to manage vaccine batches, patient inoculations, and inventory tracking. Developed for the *Introduction to Algorithms and Data Structures* (IAED) course at Instituto Superior Técnico. It was my first contact with the language **C** and helped me a lot with the understanding of data structures and memory management.
 
 ---
 
