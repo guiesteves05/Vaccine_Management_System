@@ -27,20 +27,42 @@ A high-performance CLI system written in **C** to manage vaccine batches, patien
 | `t` | `[date]` | Displays or advances the current system date. |
 | `q` | - | Frees all allocated memory and exits the program. |
 
+---
+
 ## Command Examples
 
+Below is an example interactive session demonstrating batch registration, sorting, inoculation handling, date management, and cleanup:
+
+```text
+# Register 3 vaccine batches
 c 123 15-05-2025 100 Pfizer
 c 456 01-03-2025 50 Moderna
 c 789 20-12-2025 10 Johnson
+
+# List batches (sorted by earliest expiry date)
 l
+
+# Apply inoculations (supporting space-delimited and quoted names)
 a "John Doe" Pfizer
 a Jane_Smith Moderna
+
+# List active inoculations
 u
+
+# Display / advance current date
 t 10-02-2025
+
+# List batches filtered by vaccine name
 l Pfizer
+
+# Attempt duplicate inoculation (triggers error)
 a "John Doe" Pfizer
+
+# Remove batch & delete inoculation records
 r 456
 d "John Doe"
+
+# Verify updated records & quit cleanly
 u
 q
 
