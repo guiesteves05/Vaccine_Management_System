@@ -601,7 +601,6 @@ static void free_system(Sys *sys) {
     }
 }
 
-
 /** Vaccine Management System 
  * @param argc the number of arguments
  * @param argv the arguments for the language

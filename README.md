@@ -1,95 +1,49 @@
-# iaed25 - project 
+# Vaccine Management & Inoculation System (VacManager)
 
+A high-performance CLI system written in **C (C99)** to manage vaccine batches, patient inoculations, and inventory tracking. Developed for the *Algorithms and Data Structures* (IAED) course at Instituto Superior Técnico.
 
-Este repositório git pertence a ist1114298 e destina-se ao project de iaed25.
+---
 
+## Key Features
 
-O enunciado do projecto está disponível em [enunciado.md](enunciado.md).
+* **Dynamic Memory Management:** Handles variable-length user names and resizable inoculation arrays using `malloc`, `realloc`, and strict memory cleanup (`free`).
+* **Batch & Inventory Tracking:** Registers vaccine batches with batch IDs, expiry dates, dose counts, and application tracking.
+* **Smart Allocation:** Automatically selects the oldest valid (non-expired) vaccine batch for patient inoculation.
+* **String & Command Parsing:** Custom parser capable of processing both space-delimited inputs and quoted strings containing whitespace (e.g., `"John Doe"`).
+* **Bilingual Error Messages:** Built-in internationalization support for English (`en`) and Portuguese (`pt`).
 
+---
 
-Os alunos devem submeter aqui a sua solução para o project que será avaliada automaticamente.
+## Supported Commands
 
+| Command | Arguments | Description |
+| :--- | :--- | :--- |
+| `c` | `<batch> <date> <doses> <name>` | Adds a new vaccine batch to system inventory. |
+| `l` | `[vaccine_name ...]` | Lists all batches sorted by expiry date and batch code. |
+| `a` | `<user> <vaccine>` | Inoculates a user with the oldest valid batch of the vaccine. |
+| `r` | `<batch>` | Removes a batch (or sets doses to 0 if inoculations exist). |
+| `d` | `<user> [date] [batch]` | Deletes user inoculation records based on specified filters. |
+| `u` | `[user]` | Lists all inoculations (or filtered by user) sorted by date. |
+| `t` | `[date]` | Displays or advances the current system date. |
+| `q` | - | Frees all allocated memory and exits the program. |
 
-O resultado da avaliação do projecto ficará disponível no [README](https://gitlab.rnl.tecnico.ulisboa.pt/iaed/iaed25/feedback/project/ist1114298/-/tree/master/README.md) do repositório de feedback após cada submissão de código.
+---
 
+## Tech Stack & Concepts
 
-## Data de entrega: 01 de abril 2024, às 19h59
+* **Language:** C (C99 standard)
+* **Core Concepts:** Dynamic Arrays, Pointers, Memory Allocation (`malloc`/`realloc`/`free`), Bubble Sort, Date Arithmetic, Input Stream Parsing (`sscanf`, `strtok`)
 
+---
 
-O desempenho global dos alunos no project pode ser consultado no [_dashboard_](https://gitlab.rnl.tecnico.ulisboa.pt/iaed/iaed25/iaed25/-/tree/master/dashboard/projects/project.md) do projecto, presente no repositório global de iaed25.
+## Building and Running
 
+### Prerequisites
+* GCC compiler (or any C99-compliant compiler)
+* Make
 
-Informações detalhadas sobre depuração de programas estão disponíveis em [debugging.md](debugging.md).
+### Compilation
 
-
-Outras guidelines podem ser encontradas em [guidelines.md](guidelines.md).
-
-
-
-- **Notas importantes:**
-
-
-  - [+Os alunos têm de esperar 10 minuto(s) entre submissões+]. Desta forma, têm de esperar 10 minuto(s) para resubmeter um novo programa. Caso contrário a submissão do aluno não será avaliada.
-
-
-  - [-Os alunos não podem alterar o ficheiro .gitlab-ci.yml presente no repositorio. A alteração deste ficheiro fará com que o aluno fique sem acesso a este repositório, não existirão excepções. Desta forma o aluno será avaliado com 0 valores nesta componente de avaliação-]
-
-
-
-- Processo de compilação usando o gcc (versão 12.3.0) :
-
-
-```
-gcc -O3 -Wall -Wextra -Werror -Wno-unused-result -o proj *.c
-```
-
-- Após compilar o seu projeto, para correr os testes públicos, deve descompactar e entrar na directoria dos testes:
-
-
-```
-unzip public-tests.zip
-```
-
-
-
-
-```
-cd public-tests
-```
-
-
-- Para correr todos os testes públicos através da Makefile disponibilizada, deve correr o seguinte comando dentro da directoria public-tests:
-
-
-```
+Build using the included `Makefile`:
+```bash
 make
-```
-
-
-- Resultados de avaliação mais comuns para cada teste de avaliação:
-
-
-  - _Accepted_ : O resultado do programa é igual ao esperado.
-
-
-  - _Wrong Answer_ : O resultado do programa é diferente do esperado.
-
-
-  - _Presentation Error_ : O resultado do programa difere do esperado em espaços em branco ou linhas em branco.
-
-
-  - _Compile Time Error_ : Ocorreu um erro de compilação durante a compilação do programa.
-
-
-  - _Time Limit Exceeded_ : O tempo de execução do programa programa excedeu o tempo permitido.
-
-
-  - _Memory Limit Exceeded_ : A memória de execução do programa excedeu a memória permitida.
-
-
-  - _Output Limit Exceeded_ : O output de execução do programa excedeu o espaço permitido.
-
-
-  - Outros : Ocorreu um erro durante a execução do programa que levou à paragem inesperada do mesmo.
-
-
